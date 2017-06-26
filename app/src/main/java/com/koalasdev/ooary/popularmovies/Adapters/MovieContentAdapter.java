@@ -58,6 +58,8 @@ public class MovieContentAdapter  extends  RecyclerView.Adapter<MovieContentAdap
 
         Picasso.with(context)
                 .load(endpoint.getImagePath()+movie.getPoster_path())
+                .placeholder(R.drawable.ic_broken_image_black_24dp)
+                .error(R.drawable.ic_broken_image_black_24dp)
                 .into(holder.mImgPoster);
         holder.mImgPoster.setOnClickListener(new View.OnClickListener() {
             @Override
