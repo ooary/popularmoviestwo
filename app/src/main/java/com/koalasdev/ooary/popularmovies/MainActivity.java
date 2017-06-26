@@ -1,6 +1,7 @@
 package com.koalasdev.ooary.popularmovies;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.design.widget.Snackbar;
@@ -11,6 +12,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telecom.Connection;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity  {
     ArrayList<Movie> movieList = new ArrayList<>();
     RecyclerView.Adapter movieContentAdapter;
     Snackbar snackbar;
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +54,22 @@ public class MainActivity extends AppCompatActivity  {
 
         mRvMovieList.setHasFixedSize(true);
 
-        mRvMovieList.setLayoutManager(new GridLayoutManager(this,2));
+        mRvMovieList.setLayoutManager(new GridLayoutManager(this,calculateNoOfColumns(getApplicationContext())));
         mRvMovieList.setAdapter(movieContentAdapter);
 
         new movieTask().execute();
 
+    }
+    /*
+        --references for calculateNoOfColumns
+        https://review.udacity.com/?utm_medium=email&utm_campaign=reviewsapp-submission-reviewed&utm_source=blueshift&utm_content=reviewsapp-submission-reviewed&bsft_clkid=f9ddf1de-fad9-44b4-96b3-0598be3b69eb&bsft_uid=0bc34570-d21f-4d0e-8e8e-5e85c4ebd7f1&bsft_mid=032132ff-ba2d-4849-94c1-f8d6bef7a2b2&bsft_eid=6f154690-7543-4582-9be7-e397af208dbd&bsft_txnid=f0bc1e2b-24ea-42cc-a40d-5f780826e2a1#!/reviews/572416
+     */
+    public static int calculateNoOfColumns(Context context) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        int scalingFactor = 180;
+        int noOfColumns = (int) (dpWidth / scalingFactor);
+        return noOfColumns;
     }
 
     private void fetchTopRated(){
