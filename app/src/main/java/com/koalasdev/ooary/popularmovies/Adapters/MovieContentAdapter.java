@@ -72,6 +72,7 @@ public class MovieContentAdapter  extends  RecyclerView.Adapter<MovieContentAdap
                 i.putExtra("poster_img",movie.getPoster_path());
                 i.putExtra("release_date",movie.getRelease_date());
                 i.putExtra("vote_average",movie.getVote()+"/ 10");
+                i.putExtra("id_movie",movie.getId_movie());
                 context.startActivity(i);
             }
         });

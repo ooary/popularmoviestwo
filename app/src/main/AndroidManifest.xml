@@ -20,6 +20,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".MovieDetail"></activity>
+
+        <provider
+                android:name="com.koalasdev.ooary.popularmovies.Data.FavoriteContentProvider"
+                android:authorities="com.koalasdev.ooary.popularmovies"
+                android:exported="false"
+            />
     </application>
 
 </manifest>

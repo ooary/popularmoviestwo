@@ -9,4 +9,7 @@
     <item
         android:title="Top Rated"
         android:id="@+id/set_top_rated"/>
+    <item
+        android:title="Favorite"
+        android:id="@+id/set_favorite"/>
 </menu>

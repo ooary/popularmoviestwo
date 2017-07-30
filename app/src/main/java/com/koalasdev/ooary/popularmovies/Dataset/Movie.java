@@ -11,14 +11,16 @@ public class Movie {
     private String release_date;
     private String vote;
     private String synopsis;
+    private String id_movie;
 
 
-    public Movie(String title, String poster_path, String release_date, String vote, String synopsis) {
+    public Movie(String title, String poster_path, String release_date, String vote, String synopsis, String id_movie) {
         this.title = title;
         this.poster_path = poster_path;
         this.release_date = release_date;
         this.vote = vote;
         this.synopsis = synopsis;
+        this.id_movie = id_movie;
     }
 
     public String getTitle() {
@@ -59,6 +61,14 @@ public class Movie {
 
     public void setSynopsis(String synopsis) {
         this.synopsis = synopsis;
+    }
+
+    public String getId_movie() {
+        return id_movie;
+    }
+
+    public void setId_movie(String id_movie) {
+        this.id_movie = id_movie;
     }
 
 

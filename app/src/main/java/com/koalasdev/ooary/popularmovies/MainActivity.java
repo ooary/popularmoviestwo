@@ -2,6 +2,7 @@ package com.koalasdev.ooary.popularmovies;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.design.widget.Snackbar;
@@ -19,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
@@ -27,6 +29,8 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.koalasdev.ooary.popularmovies.Adapters.MovieContentAdapter;
 import com.koalasdev.ooary.popularmovies.Config.Api;
 
+import com.koalasdev.ooary.popularmovies.Data.FavoriteContract;
+import com.koalasdev.ooary.popularmovies.Dataset.Favorite;
 import com.koalasdev.ooary.popularmovies.Dataset.Movie;
 
 import org.json.JSONArray;
@@ -35,6 +39,7 @@ import org.json.JSONObject;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity  {
     Api endpoint = new Api();
@@ -51,12 +56,9 @@ public class MainActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_main);
         mRvMovieList = (RecyclerView)findViewById(R.id.rv_movie_list);
         movieContentAdapter = new MovieContentAdapter(movieList,this);
-
         mRvMovieList.setHasFixedSize(true);
-
         mRvMovieList.setLayoutManager(new GridLayoutManager(this,calculateNoOfColumns(getApplicationContext())));
         mRvMovieList.setAdapter(movieContentAdapter);
-
         new movieTask().execute();
 
     }
@@ -88,7 +90,8 @@ public class MainActivity extends AppCompatActivity  {
                                         movieJson.getString("poster_path"),
                                         movieJson.getString("release_date"),
                                         movieJson.getString("vote_average"),
-                                        movieJson.getString("overview"));
+                                        movieJson.getString("overview"),
+                                        movieJson.getString("id"));
                                 movieList.add(movie);
                                 movieContentAdapter.notifyDataSetChanged();
                             }
@@ -105,7 +108,61 @@ public class MainActivity extends AppCompatActivity  {
                 });
     }
 
+    private void fetchFavoriteMovie(){
+        ArrayList dataId = new ArrayList();
+        Cursor data= getContentResolver().query(FavoriteContract.FavoriteEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                FavoriteContract.FavoriteEntry._ID);
+        if (data !=null && data.moveToFirst()){
 
+            while(data.moveToNext()){
+                int columnData = data.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_ID_MOVIE);
+                dataId.add(data.getString(columnData));
+
+
+            }
+            data.close();
+        }else{
+            Toast.makeText(this, "No Data", Toast.LENGTH_SHORT).show();
+        }
+        Log.d("data Favorite Movie", dataId.toString());
+
+        for (Object id : dataId){
+            String fixEndpoint = endpoint.getFavoritedMovieLink(id.toString());
+            AndroidNetworking.get(fixEndpoint)
+                    .setPriority(Priority.HIGH)
+                    .build()
+                    .getAsJSONObject(new JSONObjectRequestListener() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try{
+                                Log.d("Response Favorite",response.get("original_title").toString());
+                                Movie movie = new Movie(response.get("original_title").toString(),
+                                        response.get("poster_path").toString(),
+                                        response.get("release_date").toString(),
+                                        response.get("vote_average").toString(),
+                                        response.get("overview").toString(),
+                                        response.get("id").toString());
+                                movieList.add(movie);
+                                movieContentAdapter.notifyDataSetChanged();
+                            }catch (Exception e){
+
+                            }
+
+                        }
+
+                        @Override
+                        public void onError(ANError anError) {
+
+                        }
+                    });
+        }
+
+
+
+    }
 
     private void fetchPopularMovie() {
         AndroidNetworking.get(endpoint.getPopularLink())
@@ -124,7 +181,8 @@ public class MainActivity extends AppCompatActivity  {
                                                                     movieJson.getString("poster_path"),
                                                                     movieJson.getString("release_date"),
                                                                     movieJson.getString("vote_average"),
-                                                                    movieJson.getString("overview"));
+                                                                    movieJson.getString("overview"),
+                                                                    movieJson.getString("id"));
                                             movieList.add(movie);
                                          movieContentAdapter.notifyDataSetChanged();
                                      }
@@ -165,7 +223,14 @@ public class MainActivity extends AppCompatActivity  {
             }
 
             return true;
+        }else if (menuSelected == R.id.set_favorite){
+            if(movieList.size()>0){
+                movieList.clear();
+                fetchFavoriteMovie();
+            }
+            return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
