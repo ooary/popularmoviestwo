@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Parcelable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -49,6 +50,13 @@ public class MainActivity extends AppCompatActivity  {
     RecyclerView.Adapter movieContentAdapter;
     Snackbar snackbar;
     Context context;
+    public final static String LIST_STATE_KEY = "recycler_list_state";
+    Parcelable listState;
+    GridLayoutManager gm;
+    public static String sortCriteria = null;
+    public static String CRITERIA_VALUE = null;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,15 +65,65 @@ public class MainActivity extends AppCompatActivity  {
         mRvMovieList = (RecyclerView)findViewById(R.id.rv_movie_list);
         movieContentAdapter = new MovieContentAdapter(movieList,this);
         mRvMovieList.setHasFixedSize(true);
-        mRvMovieList.setLayoutManager(new GridLayoutManager(this,calculateNoOfColumns(getApplicationContext())));
+        gm = new GridLayoutManager(this,calculateNoOfColumns(getApplicationContext()));
+        mRvMovieList.setLayoutManager(gm);
         mRvMovieList.setAdapter(movieContentAdapter);
-        new movieTask().execute();
 
+        handleStateRotate(savedInstanceState);
     }
+
+    private void handleStateRotate(Bundle savedInstanceState) {
+        if(savedInstanceState == null){
+            new movieTask().execute();
+            CRITERIA_VALUE = "POPULAR";
+        } else if(CRITERIA_VALUE.matches("POPULAR")){
+            CRITERIA_VALUE ="POPULAR";
+            movieContentAdapter.notifyDataSetChanged();
+            if(movieList.size()>0) {
+                movieList.clear();
+                new movieTask().execute();
+            }else{
+                new movieTask().execute();
+            }
+        } else if (CRITERIA_VALUE.matches("TOP_RATED")){
+            CRITERIA_VALUE ="TOP_RATED";
+            movieContentAdapter.notifyDataSetChanged();
+            if(movieList.size()>0){
+                movieList.clear();
+                fetchTopRated();
+            }else{
+                fetchTopRated();
+            }
+
+        }else if (CRITERIA_VALUE.matches("FAVORITE")){
+            CRITERIA_VALUE ="FAVORITE";
+            movieContentAdapter.notifyDataSetChanged();
+            if(movieList.size()>0){
+                movieList.clear();
+                fetchFavoriteMovie();
+                Log.d("Favorite Loaded","TRUE");
+            }else{
+                fetchFavoriteMovie();
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(sortCriteria,CRITERIA_VALUE);
+        Log.d("Instance OutState", outState.toString());
+    }
+
+
+
+
+
     /*
-        --references for calculateNoOfColumns
-        https://review.udacity.com/?utm_medium=email&utm_campaign=reviewsapp-submission-reviewed&utm_source=blueshift&utm_content=reviewsapp-submission-reviewed&bsft_clkid=f9ddf1de-fad9-44b4-96b3-0598be3b69eb&bsft_uid=0bc34570-d21f-4d0e-8e8e-5e85c4ebd7f1&bsft_mid=032132ff-ba2d-4849-94c1-f8d6bef7a2b2&bsft_eid=6f154690-7543-4582-9be7-e397af208dbd&bsft_txnid=f0bc1e2b-24ea-42cc-a40d-5f780826e2a1#!/reviews/572416
-     */
+          --references for calculateNoOfColumns
+           https://review.udacity.com/?utm_medium=email&utm_campaign=reviewsapp-submission-reviewed&utm_source=blueshift&utm_content=reviewsapp-submission-reviewed&bsft_clkid=f9ddf1de-fad9-44b4-96b3-0598be3b69eb&bsft_uid=0bc34570-d21f-4d0e-8e8e-5e85c4ebd7f1&bsft_mid=032132ff-ba2d-4849-94c1-f8d6bef7a2b2&bsft_eid=6f154690-7543-4582-9be7-e397af208dbd&bsft_txnid=f0bc1e2b-24ea-42cc-a40d-5f780826e2a1#!/reviews/572416
+    */
     public static int calculateNoOfColumns(Context context) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
@@ -211,6 +269,7 @@ public class MainActivity extends AppCompatActivity  {
     public boolean onOptionsItemSelected(MenuItem item) {
         int menuSelected = item.getItemId();
         if(menuSelected == R.id.set_popular){
+            CRITERIA_VALUE ="POPULAR";
             movieContentAdapter.notifyDataSetChanged();
             if(movieList.size()>0) {
                 movieList.clear();
@@ -220,6 +279,7 @@ public class MainActivity extends AppCompatActivity  {
             }
             return true;
         }else if(menuSelected == R.id.set_top_rated){
+            CRITERIA_VALUE ="TOP_RATED";
             movieContentAdapter.notifyDataSetChanged();
             if(movieList.size()>0){
                 movieList.clear();
@@ -230,6 +290,7 @@ public class MainActivity extends AppCompatActivity  {
 
             return true;
         }else if (menuSelected == R.id.set_favorite){
+            CRITERIA_VALUE = "FAVORITE";
             movieContentAdapter.notifyDataSetChanged();
             if(movieList.size()>0){
                 movieList.clear();
