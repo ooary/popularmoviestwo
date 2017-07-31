@@ -20,7 +20,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         final String SQL_CREATE_DATABASE = "CREATE TABLE " + FavoriteContract.FavoriteEntry.TABLE_NAME
                 + " ("+ FavoriteContract.FavoriteEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + FavoriteContract.FavoriteEntry.COLUMN_ID_MOVIE + " TEXT NOT NULL"
+                + FavoriteContract.FavoriteEntry.COLUMN_ID_MOVIE + " TEXT NOT NULL,"
+                + FavoriteContract.FavoriteEntry.COLUMN_TITLE_MOVIE +" TEXT NOT NULL"
                 + ");";
         db.execSQL(SQL_CREATE_DATABASE);
     }

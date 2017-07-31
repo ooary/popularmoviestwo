@@ -20,6 +20,7 @@ public class FavoriteContract  {
 
         public static final String TABLE_NAME= "favorite";
         public static final String COLUMN_ID_MOVIE = "id_movie";
+        public static final String COLUMN_TITLE_MOVIE = "title";
 
     }
 }

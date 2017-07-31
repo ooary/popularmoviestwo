@@ -211,19 +211,26 @@ public class MainActivity extends AppCompatActivity  {
     public boolean onOptionsItemSelected(MenuItem item) {
         int menuSelected = item.getItemId();
         if(menuSelected == R.id.set_popular){
+            movieContentAdapter.notifyDataSetChanged();
             if(movieList.size()>0) {
                 movieList.clear();
+                new movieTask().execute();
+            }else{
                 new movieTask().execute();
             }
             return true;
         }else if(menuSelected == R.id.set_top_rated){
+            movieContentAdapter.notifyDataSetChanged();
             if(movieList.size()>0){
                 movieList.clear();
+                fetchTopRated();
+            }else{
                 fetchTopRated();
             }
 
             return true;
         }else if (menuSelected == R.id.set_favorite){
+            movieContentAdapter.notifyDataSetChanged();
             if(movieList.size()>0){
                 movieList.clear();
                 fetchFavoriteMovie();
