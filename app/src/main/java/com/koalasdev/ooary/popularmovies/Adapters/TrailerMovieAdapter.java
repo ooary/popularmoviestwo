@@ -1,5 +1,6 @@
 package com.koalasdev.ooary.popularmovies.Adapters;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -56,8 +57,15 @@ public class TrailerMovieAdapter  extends RecyclerView.Adapter<TrailerMovieAdapt
                 String fix = endpoint.getYOUTUBE_LINK(trailerContent.getKey());
                 Toast.makeText(context, fix, Toast.LENGTH_SHORT).show();
                 Uri uri = Uri.parse("vnd.youtube://"+trailerContent.getKey());
+                Uri webUri = Uri.parse("https://www.youtube.com/watch?v="+trailerContent.getKey());
                 Intent app = new Intent(Intent.ACTION_VIEW,uri );
-                context.startActivity(app);
+                Intent web = new Intent(Intent.ACTION_VIEW,webUri);
+                try{
+                    context.startActivity(app);
+                }catch (ActivityNotFoundException e){
+                    context.startActivity(web);
+                }
+
             }
         });
 
