@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.media.Image;
 import android.net.Uri;
+import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,26 +50,26 @@ public class MovieDetail extends AppCompatActivity
     ImageView mImagePoster,mImageFav;
     TextView mTitle,mOverview,mVote,mReleaseDate;
     Context context;
+    ScrollView mSvDetail;
     Cursor data;
-
+    public static final String LIST_STATE_USER = "recycler_view_user";
+    public static final String LIST_STATE_TRAILER = "recycler_view_trailer";
     public static final int MOVIE_LOADER_ID = 0;
     public boolean isAvailable = false;
     RecyclerView mRvTrailer,mRvReview;
     ArrayList<Trailer> trailerList = new ArrayList<>();
     ArrayList<Review> reviewList = new ArrayList<>();
+    ArrayList<Trailer> stateTrailer = new ArrayList<>();
+    ArrayList<Review> stateReview = new ArrayList<>();
     RecyclerView.Adapter trailerContentAdapter,reviewContentAdapter;
+    Parcelable mListStateUser,mListStateTrailer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        final ProgressBar pb = (ProgressBar) findViewById(R.id.pb_trailer);
-        final ProgressBar pbReview = (ProgressBar)findViewById(R.id.pb_review);
-        pb.setVisibility(View.VISIBLE);
-        pbReview.setVisibility(View.VISIBLE);
-        getTrailer(pb);
-        fetchMovieDetail(pbReview);
-        getSupportLoaderManager().initLoader(MOVIE_LOADER_ID,null,this);
+
         initView();
         initRvReview();
         initRvTrailer();
@@ -85,8 +87,37 @@ public class MovieDetail extends AppCompatActivity
             }
         });
 
+        if(savedInstanceState !=null){
+            stateReview = savedInstanceState.getParcelableArrayList(LIST_STATE_USER);
+            stateTrailer  = savedInstanceState.getParcelableArrayList(LIST_STATE_TRAILER);
+            reviewList.addAll(stateReview);
+            trailerList.addAll(stateTrailer);
+
+        }else{
+            final ProgressBar pb = (ProgressBar) findViewById(R.id.pb_trailer);
+            final ProgressBar pbReview = (ProgressBar)findViewById(R.id.pb_review);
+            pb.setVisibility(View.VISIBLE);
+            pbReview.setVisibility(View.VISIBLE);
+            getTrailer(pb);
+            fetchMovieDetail(pbReview);
+
+        }
+        getSupportLoaderManager().initLoader(MOVIE_LOADER_ID,null,this);
+
+
+
 
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(LIST_STATE_TRAILER,trailerList);
+        outState.putParcelableArrayList(LIST_STATE_USER,reviewList);
+    }
+
+
+
 
     private void setDataFromIntent() {
         mTitle.setText(getIntent().getStringExtra("title"));
@@ -124,6 +155,7 @@ public class MovieDetail extends AppCompatActivity
         mVote = (TextView)findViewById(R.id.tv_vote);
         mReleaseDate = (TextView)findViewById(R.id.tv_release_date);
         mImageFav = (ImageView) findViewById(R.id.image_fav);
+        mSvDetail = (ScrollView) findViewById(R.id.sv_detail);
     }
 
     public void getTrailer(final ProgressBar pb){
@@ -290,7 +322,7 @@ public class MovieDetail extends AppCompatActivity
             }else{
                 mImageFav.setImageDrawable(getResources().getDrawable(R.drawable.ic_favorite_red_24dp));
             }
-            data.close();
+
         }
     }
 

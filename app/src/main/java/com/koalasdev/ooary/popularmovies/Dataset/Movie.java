@@ -1,10 +1,13 @@
 package com.koalasdev.ooary.popularmovies.Dataset;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by ooary on 24/06/2017.
  */
 
-public class Movie {
+public class Movie implements Parcelable{
 
     private String title;
     private String poster_path;
@@ -22,6 +25,16 @@ public class Movie {
         this.synopsis = synopsis;
         this.id_movie = id_movie;
     }
+
+    public Movie(Parcel source) {
+        this.title = source.readString();
+        this.poster_path = source.readString();
+        this.release_date = source.readString();
+        this.vote = source.readString();
+        this.synopsis = source.readString();
+        this.id_movie = source.readString();
+    }
+
 
     public String getTitle() {
         return title;
@@ -71,5 +84,33 @@ public class Movie {
         this.id_movie = id_movie;
     }
 
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString( this.title);
+        dest.writeString( this.poster_path);
+        dest.writeString( this.release_date);
+        dest.writeString( this.vote);
+        dest.writeString( this.synopsis);
+        dest.writeString( this.id_movie);
+
+    }
+
+    public static final Parcelable.Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel source) {
+            return new Movie(source);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 
 }

@@ -47,14 +47,18 @@ public class MainActivity extends AppCompatActivity  {
     RecyclerView mRvMovieList;
     ProgressDialog mProgressDialog;
     ArrayList<Movie> movieList = new ArrayList<>();
+    ArrayList<Movie> stateMovie = new ArrayList<>();
     RecyclerView.Adapter movieContentAdapter;
     Snackbar snackbar;
     Context context;
     public final static String LIST_STATE_KEY = "recycler_list_state";
+    public static final String ITEM_VIEW_POSITION = "item_position";
+    public static final String ADAPTER_DATA ="adapter_data";
     Parcelable listState;
     GridLayoutManager gm;
     public static String sortCriteria = null;
     public static String CRITERIA_VALUE = null;
+    public int mItemPosition;
 
 
 
@@ -62,6 +66,7 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        handleStateRotate(savedInstanceState);
         mRvMovieList = (RecyclerView)findViewById(R.id.rv_movie_list);
         movieContentAdapter = new MovieContentAdapter(movieList,this);
         mRvMovieList.setHasFixedSize(true);
@@ -69,61 +74,77 @@ public class MainActivity extends AppCompatActivity  {
         mRvMovieList.setLayoutManager(gm);
         mRvMovieList.setAdapter(movieContentAdapter);
 
-        handleStateRotate(savedInstanceState);
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(CRITERIA_VALUE.matches("FAVORITE")){
+            fetchFavoriteMovie();
+        }
     }
 
     private void handleStateRotate(Bundle savedInstanceState) {
-        if(savedInstanceState == null){
+        if (savedInstanceState == null) {
             new movieTask().execute();
             CRITERIA_VALUE = "POPULAR";
-        } else if(CRITERIA_VALUE.matches("POPULAR")){
-            CRITERIA_VALUE ="POPULAR";
-            movieContentAdapter.notifyDataSetChanged();
-            if(movieList.size()>0) {
-                movieList.clear();
-                new movieTask().execute();
-            }else{
-                new movieTask().execute();
-            }
-        } else if (CRITERIA_VALUE.matches("TOP_RATED")){
-            CRITERIA_VALUE ="TOP_RATED";
-            movieContentAdapter.notifyDataSetChanged();
-            if(movieList.size()>0){
-                movieList.clear();
-                fetchTopRated();
-            }else{
-                fetchTopRated();
+        } else if (savedInstanceState != null) {
+
+            if (CRITERIA_VALUE.matches("POPULAR")) {
+
+                stateMovie = savedInstanceState.getParcelableArrayList(ADAPTER_DATA);
+                CRITERIA_VALUE = "POPULAR";
+                movieList.addAll(stateMovie);
+
+            } else if (CRITERIA_VALUE.matches("TOP_RATED")) {
+                CRITERIA_VALUE = "TOP_RATED";
+                stateMovie = savedInstanceState.getParcelableArrayList(ADAPTER_DATA);
+
+                movieList.addAll(stateMovie);
+
+
+            } else if (CRITERIA_VALUE.matches("FAVORITE")) {
+                CRITERIA_VALUE = "FAVORITE";
+                stateMovie = savedInstanceState.getParcelableArrayList(ADAPTER_DATA);
+                movieList.addAll(stateMovie);
+
             }
 
-        }else if (CRITERIA_VALUE.matches("FAVORITE")){
-            CRITERIA_VALUE ="FAVORITE";
-            movieContentAdapter.notifyDataSetChanged();
-            if(movieList.size()>0){
-                movieList.clear();
-                fetchFavoriteMovie();
-                Log.d("Favorite Loaded","TRUE");
-            }else{
-                fetchFavoriteMovie();
-            }
+
         }
     }
+
+
+
+
+
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
+        listState = mRvMovieList.getLayoutManager().onSaveInstanceState();
+        outState.putParcelableArrayList(ADAPTER_DATA,  movieList);
+        outState.putParcelable(LIST_STATE_KEY,listState);
         outState.putString(sortCriteria,CRITERIA_VALUE);
         Log.d("Instance OutState", outState.toString());
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mRvMovieList.getLayoutManager().onRestoreInstanceState(savedInstanceState.getParcelable(LIST_STATE_KEY));
     }
 
 
 
-
-
     /*
-          --references for calculateNoOfColumns
-           https://review.udacity.com/?utm_medium=email&utm_campaign=reviewsapp-submission-reviewed&utm_source=blueshift&utm_content=reviewsapp-submission-reviewed&bsft_clkid=f9ddf1de-fad9-44b4-96b3-0598be3b69eb&bsft_uid=0bc34570-d21f-4d0e-8e8e-5e85c4ebd7f1&bsft_mid=032132ff-ba2d-4849-94c1-f8d6bef7a2b2&bsft_eid=6f154690-7543-4582-9be7-e397af208dbd&bsft_txnid=f0bc1e2b-24ea-42cc-a40d-5f780826e2a1#!/reviews/572416
-    */
+              --references for calculateNoOfColumns
+               https://review.udacity.com/?utm_medium=email&utm_campaign=reviewsapp-submission-reviewed&utm_source=blueshift&utm_content=reviewsapp-submission-reviewed&bsft_clkid=f9ddf1de-fad9-44b4-96b3-0598be3b69eb&bsft_uid=0bc34570-d21f-4d0e-8e8e-5e85c4ebd7f1&bsft_mid=032132ff-ba2d-4849-94c1-f8d6bef7a2b2&bsft_eid=6f154690-7543-4582-9be7-e397af208dbd&bsft_txnid=f0bc1e2b-24ea-42cc-a40d-5f780826e2a1#!/reviews/572416
+        */
     public static int calculateNoOfColumns(Context context) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
